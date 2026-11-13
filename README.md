@@ -6,4 +6,4 @@ Nous développons en Python, avec la bibliothèque graphique `fltk`, une version
 
 **Le jeu :** un joueur cache des chats et des souris sous des cartes de couleur disposées en grille, et les autres joueurs, en équipe, doivent tous les retrouver en perdant le moins de vies possible.
 
-**Équipe :** BELHADJ MAHAMMED Ahmed,POMMEREAU Tony, BOYACI Hassan
+**Équipe :** BELHADJ MAHAMMED Ahmed,POMMEREAU Tony, BOYACI Hasan
