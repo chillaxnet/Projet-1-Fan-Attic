@@ -1,7 +1,12 @@
-import fltk
+from fltk import *
 
 def fenetre(n,m):
-    fltk.cree_fenetre(n,m)
-    fltk.mise_a_jour()
+    cree_fenetre(n,m)
+    while True:
+        ev = donne_ev()
+        if type_ev(ev) == 'Quitte':
+            break
+        mise_a_jour()
+    ferme_fenetre()
 
-fenetre(1920,1080)
+fenetre(500,500)
