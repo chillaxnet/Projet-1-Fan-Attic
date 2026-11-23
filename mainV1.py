@@ -21,11 +21,16 @@ def fenetre(n, m, cases = 6, taille = 75):
             colonne = x // taille
             ligne = y // taille
             if 0 <= ligne < cases and 0 <= colonne < cases:
+                x1 = colonne * taille
+                y1 = ligne * taille
                 if (ligne, colonne) not in case:
                     case.append((ligne, colonne))
-                    x1 = colonne * taille
-                    y1 = ligne * taille
                     fltk.rectangle(x1, y1, x1 + taille, y1 + taille, couleur="black", remplissage="blue")
+                else :
+                    fltk.texte(850/2, 480, "Case déjà sélectionnée", couleur="red", ancrage="center")
+        fltk.efface(fltk.texte(850/2, 480, "Case déjà sélectionnée", couleur="red", ancrage="center"))
+
+               
         fltk.mise_a_jour()
     fltk.ferme_fenetre()
 
