@@ -1,5 +1,6 @@
 
 import fltk
+IMAGES = ["assets/chat.png", "assets/souris.png", None]
 
 def taille_grille(defaut=5):
     saisie = input("Entrez le nombre de couleurs (5 par défaut) : ")
@@ -16,15 +17,15 @@ def clic_selection(x, y, cases, x0, t):
     return None
 
 def dessiner_zone(cases, liste_couleurs, x0, t):
-    liste_couleurs = ["blue", "red", "green", "yellow", "orange"]
-    types = ["C", "S","V"]
     for i in range(cases):
         for k in range(3):
-            x = x0+k*t
+            x = x0 + k*t
             y = i * t
             fltk.rectangle(x, y, x+t, y+t, couleur="black", remplissage=liste_couleurs[i])
-            fltk.texte(x+t/2, y+t/2, types[k], couleur="black", ancrage="center")
-
+            if IMAGES[k] is not None:
+                fltk.image(x + t/2, y + t/2, IMAGES[k], largeur=t-10, hauteur=t-10, ancrage="center")
+            else:
+                fltk.texte(x + t/2, y + t/2, " ", couleur="black", ancrage="center")
 
 def fenetre(n, m, cases=5, taille = 75):
     liste_couleurs = ["blue", "red", "green", "yellow", "orange"]
@@ -41,7 +42,6 @@ def fenetre(n, m, cases=5, taille = 75):
             y = i * taille
             fltk.rectangle(x, y, x+taille, y+taille, couleur="black", remplissage="white")
     selection = None
-    types = ["C", "S", "V"]
     while True:
         ev = fltk.donne_ev()
         if fltk.type_ev(ev) == 'Quitte':
@@ -70,7 +70,8 @@ def fenetre(n, m, cases=5, taille = 75):
                         x1 = colonne * taille
                         y1 = ligne * taille
                         fltk.rectangle(x1, y1, x1 + taille, y1 + taille,couleur="black", remplissage=liste_couleurs[selection[0]])
-                        fltk.texte(x1 + taille/2, y1 + taille/2, types[selection[1]][0].upper(), ancrage="center")
+                        if IMAGES[selection[1]] is not None:
+                            fltk.image(x1 + taille/2, y1 + taille/2, IMAGES[selection[1]], largeur=taille-10, hauteur=taille-10, ancrage="center")        
         elif fltk.type_ev(ev) == 'ClicDroit':
             fltk.efface("msg")
             x = fltk.abscisse(ev)
