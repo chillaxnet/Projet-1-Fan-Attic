@@ -27,6 +27,26 @@ def dessiner_zone(cases, liste_couleurs, x0, t):
             else:
                 fltk.texte(x + t/2, y + t/2, " ", couleur="black", ancrage="center")
 
+def verifie_placement(grille, ligne, colonne, couleur, type_carte, cases):
+    if type_carte < 2:
+        maximum = 1          # un seul chat / une seule souris par couleur
+    else:
+        maximum = cases - 2  # le reste est vide
+    deja = 0
+    for carte in grille.values():
+        if carte == (couleur, type_carte):
+            deja += 1
+    if deja >= maximum:
+        return "Plus de carte de ce type"
+
+    if type_carte < 2:
+        for (l, c), (coul, typ) in grille.items():
+            if typ == type_carte and (l == ligne or c == colonne):
+                return "Deux chats (ou deux souris) sur la même ligne ou colonne"
+            if typ == 1 - type_carte and coul == couleur and abs(l - ligne) <= 1 and abs(c - colonne) <= 1:
+                return "Un chat et une souris de même couleur sont voisins"
+    return None
+
 def fenetre(n, m, cases=5, taille = 75):
     liste_couleurs = ["blue", "red", "green", "yellow", "orange"]
     cases = taille_grille()
@@ -35,7 +55,7 @@ def fenetre(n, m, cases=5, taille = 75):
     t = 50
     dessiner_zone(cases, liste_couleurs, x0, t)
     fltk.__canevas.root.title("Chats et souris – Éditeur de plateau")
-    case = []
+    grille = {}
     for i in range(cases):
         for j in range(cases):
             x = j * taille
@@ -62,24 +82,27 @@ def fenetre(n, m, cases=5, taille = 75):
                 if 0 <= ligne < cases and 0 <= colonne < cases:
                     if selection is None:
                         fltk.texte(n/2, 480, "Choisis d'abord une carte", couleur="red", ancrage="center", tag="msg")
-                    elif (ligne, colonne) in case:
+                    elif (ligne, colonne) in grille:
                         fltk.texte(n/2, 480, "Case déjà sélectionnée", couleur="red", ancrage="center", tag="msg")
-                    
                     else:
-                        case.append((ligne, colonne))
-                        x1 = colonne * taille
-                        y1 = ligne * taille
-                        fltk.rectangle(x1, y1, x1 + taille, y1 + taille,couleur="black", remplissage=liste_couleurs[selection[0]])
-                        if IMAGES[selection[1]] is not None:
-                            fltk.image(x1 + taille/2, y1 + taille/2, IMAGES[selection[1]], largeur=taille-10, hauteur=taille-10, ancrage="center")        
+                        erreur = verifie_placement(grille, ligne, colonne, selection[0], selection[1], cases)
+                        if erreur is not None:
+                            fltk.texte(n/2, 480, erreur, couleur="red", ancrage="center", tag="msg")
+                        else:
+                            grille[(ligne, colonne)] = selection
+                            x1 = colonne * taille
+                            y1 = ligne * taille
+                            fltk.rectangle(x1, y1, x1 + taille, y1 + taille, couleur="black", remplissage=liste_couleurs[selection[0]])
+                            if IMAGES[selection[1]] is not None:
+                                fltk.image(x1 + taille/2, y1 + taille/2, IMAGES[selection[1]], largeur=taille-10, hauteur=taille-10, ancrage="center")
         elif fltk.type_ev(ev) == 'ClicDroit':
             fltk.efface("msg")
             x = fltk.abscisse(ev)
             y = fltk.ordonnee(ev)
             colonne = x // taille
             ligne = y // taille
-            if (ligne, colonne) in case:
-                case.remove((ligne, colonne))
+            if (ligne, colonne) in grille:
+                del grille[(ligne, colonne)]
                 x1 = colonne * taille
                 y1 = ligne * taille
                 fltk.rectangle(x1, y1, x1 + taille, y1 + taille, couleur="black", remplissage="white")
