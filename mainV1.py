@@ -1,6 +1,7 @@
-
 import fltk
 IMAGES = ["assets/chat.png", "assets/souris.png", None]
+LARGEUR_BOUTON = 150   # taille du bouton valider
+HAUTEUR_BOUTON = 40
 
 def taille_grille(defaut=5):
     saisie = input("Entrez le nombre de couleurs (5 par défaut) : ")
@@ -47,6 +48,30 @@ def verifie_placement(grille, ligne, colonne, couleur, type_carte, cases):
                 return "Un chat et une souris de même couleur sont voisins"
     return None
 
+def grille_complete(grille, cases):
+    return len(grille) == cases * cases
+
+def dessiner_bouton(x, y, actif):
+    fltk.efface("bouton")   # on efface l'ancien bouton avant de le redessiner
+    if actif:
+        fond = "green"
+        couleur_texte = "white"
+    else:
+        fond = "lightgrey"
+        couleur_texte = "grey"
+    fltk.rectangle(x, y, x + LARGEUR_BOUTON, y + HAUTEUR_BOUTON, couleur="black", remplissage=fond, epaisseur=2, tag="bouton")
+    fltk.texte(x + LARGEUR_BOUTON / 2, y + HAUTEUR_BOUTON / 2, "Valider", couleur=couleur_texte, ancrage="center", taille=18, tag="bouton")
+
+def clic_bouton(x, y, bx, by):
+    return bx <= x <= bx + LARGEUR_BOUTON and by <= y <= by + HAUTEUR_BOUTON
+
+def retourner_cartes(grille, liste_couleurs, taille):
+    fltk.efface_tout()   # on retire la zone de sélection, le bouton et les images
+    for (ligne, colonne), (couleur, type_carte) in grille.items():
+        x = colonne * taille
+        y = ligne * taille
+        fltk.rectangle(x, y, x + taille, y + taille, couleur="black", remplissage=liste_couleurs[couleur], epaisseur=2)
+
 def fenetre(n, m, cases=5, taille = 75):
     liste_couleurs = ["blue", "red", "green", "yellow", "orange"]
     cases = taille_grille()
@@ -54,6 +79,10 @@ def fenetre(n, m, cases=5, taille = 75):
     x0 = cases * taille+20
     t = 50
     dessiner_zone(cases, liste_couleurs, x0, t)
+    bx = x0                 # le bouton Valider est placé sous la zone de sélection
+    by = cases * t + 20
+    dessiner_bouton(bx, by, False)
+    valide = False          # devient True une fois la grille validée
     fltk.__canevas.root.title("Chats et souris – Éditeur de plateau")
     grille = {}
     for i in range(cases):
@@ -66,7 +95,7 @@ def fenetre(n, m, cases=5, taille = 75):
         ev = fltk.donne_ev()
         if fltk.type_ev(ev) == 'Quitte':
             break
-        elif fltk.type_ev(ev) == 'ClicGauche':
+        elif fltk.type_ev(ev) == 'ClicGauche' and not valide:
             fltk.efface("msg")
             x = fltk.abscisse(ev)
             y = fltk.ordonnee(ev)
@@ -76,6 +105,13 @@ def fenetre(n, m, cases=5, taille = 75):
                 fltk.efface("surbrillance")
                 i, k = choix
                 fltk.rectangle(x0 + k*t, i*t, x0 + k*t + t, i*t + t,couleur="black", epaisseur=4, tag="surbrillance")
+            elif clic_bouton(x, y, bx, by):
+                if grille_complete(grille, cases):
+                    valide = True
+                    retourner_cartes(grille, liste_couleurs, taille)
+                    fltk.texte(n/2, 480, "Grille validée : les cartes sont face cachée", couleur="green", ancrage="center", tag="msg")
+                else:
+                    fltk.texte(n/2, 480, f"Grille incomplète : {len(grille)} / {cases * cases} cartes posées", couleur="red", ancrage="center", tag="msg")
             else:
                 colonne = x // taille
                 ligne = y // taille
@@ -95,7 +131,8 @@ def fenetre(n, m, cases=5, taille = 75):
                             fltk.rectangle(x1, y1, x1 + taille, y1 + taille, couleur="black", remplissage=liste_couleurs[selection[0]])
                             if IMAGES[selection[1]] is not None:
                                 fltk.image(x1 + taille/2, y1 + taille/2, IMAGES[selection[1]], largeur=taille-10, hauteur=taille-10, ancrage="center")
-        elif fltk.type_ev(ev) == 'ClicDroit':
+                            dessiner_bouton(bx, by, grille_complete(grille, cases))
+        elif fltk.type_ev(ev) == 'ClicDroit' and not valide:
             fltk.efface("msg")
             x = fltk.abscisse(ev)
             y = fltk.ordonnee(ev)
@@ -106,6 +143,7 @@ def fenetre(n, m, cases=5, taille = 75):
                 x1 = colonne * taille
                 y1 = ligne * taille
                 fltk.rectangle(x1, y1, x1 + taille, y1 + taille, couleur="black", remplissage="white")
+                dessiner_bouton(bx, by, False)   # une case est libre : la grille n'est plus complète
         fltk.mise_a_jour()
 
 if __name__ == "__main__":
